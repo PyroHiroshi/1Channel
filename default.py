@@ -84,6 +84,8 @@ GENRES = ['Action', 'Adventure', 'Animation', 'Biography', 'Comedy',
           'Mystery', 'Reality-TV', 'Romance', 'Sci-Fi', 'Short', 'Sport', 
           'Talk-Show', 'Thriller', 'War', 'Western', 'Zombies']
 
+SORTINGS = ['Featured', 'Views', 'Ratings', 'Release', 'Date']
+
 prepare_zip = False
 metaget=metahandlers.MetaData(preparezip=prepare_zip)
 
@@ -457,6 +459,9 @@ def TrackProgress(player):
             xbmc.sleep(250)
 
 def ChangeWatched(imdb_id, video_type, name, season, episode, year='', watched='', refresh=False):
+    #Right-click, mark as watched.
+    if episode:
+        video_type = 'episode'
     metaget=metahandlers.MetaData(preparezip=prepare_zip)
     metaget.change_watched(video_type, name, imdb_id, season=season, episode=episode, year=year, watched=watched)
     if refresh:
@@ -617,9 +622,15 @@ def BrowseAlphabetMenu(section=None): #1000
 def BrowseByGenreMenu(section=None, letter=None): #2000
     print 'Browse by genres screen'
     for genre in GENRES:
-        addon.add_directory({'mode': 'GetFilteredResults', 'section': section, 'sort':'', 'genre': genre},   {'title':  genre})
+        addon.add_directory({'mode': 'BrowseByGenreMenuSort', 'section': section, 'genre': genre},   {'title':  genre})
     xbmcplugin.endOfDirectory(int(sys.argv[1]))
 
+def BrowseByGenreMenuSort(section=None, genre=None):
+    print 'Browse by genres sort screen'
+    for sort in SORTINGS:
+        addon.add_directory({'mode': 'GetFilteredResults', 'section': section, 'sort': sort, 'genre': genre},   {'title':  sort})
+    
+    xbmcplugin.endOfDirectory(int(sys.argv[1]))
 
 def add_contextsearchmenu(title, type):
     contextmenuitems = []
@@ -1842,7 +1853,7 @@ def build_listitem(video_type, title, year, img, resurl, imdbnum='', season='', 
 
         if meta['overlay'] == 6: label = 'Mark as watched'
         else: label = 'Mark as unwatched'
-        runstring = 'RunPlugin(%s)' % addon.build_plugin_url({'mode':'ChangeWatched', 'title':title, 'imdbnum':meta['imdb_id'],  'video_type':video_type, 'year':year})
+        runstring = 'RunPlugin(%s)' % addon.build_plugin_url({'mode':'ChangeWatched', 'imdbnum':meta['imdb_id'], 'video_type':video_type, 'title':title, 'season':season, 'episode':episode, 'year':year})
         cm.append((label, runstring,))
 
         fanart = ''
@@ -1954,6 +1965,8 @@ elif mode=='GetByLetter':
     GetByLetter(letter, section)
 elif mode=='BrowseByGenreMenu':
     BrowseByGenreMenu(section)
+elif mode=='BrowseByGenreMenuSort':
+    BrowseByGenreMenuSort(section, genre)    
 elif mode=='GetFilteredResults':
     GetFilteredResults(section, genre, letter, sort, page)
 elif mode=='TVShowSeasonList':
