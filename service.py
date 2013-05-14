@@ -41,6 +41,8 @@ def format_time(seconds):
         return "%02d:%02d" % (minutes, seconds)
 
 def ChangeWatched(imdb_id, video_type, name, season, episode, year='', watched='', refresh=False):
+    if episode:
+        video_type = 'episode'
     from metahandler import metahandlers
     metaget=metahandlers.MetaData(False)
     metaget.change_watched(video_type, name, imdb_id, season=season, episode=episode, year=year, watched=watched)
